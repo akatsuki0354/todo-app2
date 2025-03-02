@@ -8,18 +8,16 @@ function App() {
   const [input, setInput] = useState("");
   const [Edit, setEdit] = useState(false);
   const [EditText, setEditText] = useState("");
-
+  const db = getDatabase();
   const SubmitData = (e) => {
     e.preventDefault();
     if (input == "") {
       alert("Cannot be empty")
       return;
     } else {
-      const db = getDatabase();      
-      if (Edit) {
-        // Update existing task
+      if (Edit) {// Update existing task
         update(ref(db, `test/${EditText}`), {
-          fullname: input,
+
         })
           .then(() => {
             alert("Task updated successfully!");
@@ -43,6 +41,16 @@ function App() {
           });
       }
     }
+
+    push(ref(db, "test/"), {
+      fullname: input,
+      done: false,
+    }).then(() => {
+      alert("Task added successfully!");
+      setInput("");
+    }).catch((error) => {
+      alert("Error adding task: " + error.message);
+    });
   };
   //edit button
   const handleEdit = (taskId, taskName) => {
@@ -52,7 +60,7 @@ function App() {
   };
   //* delete data from firebase */
   const DeleteButton = (id) => {
-    const db = getDatabase();
+
     remove(ref(db, `test/${id}`))
       .then(() => {
         alert("Task Deleted Successfully");
@@ -62,11 +70,9 @@ function App() {
       });
   };
 
-
-
   //* fetch data from firebase */
   useEffect(() => {
-    const db = getDatabase();
+
     const dbRef = ref(db, "test");
     //* Listen for real-time updates
     onValue(dbRef, (snapshot) => {
@@ -75,6 +81,7 @@ function App() {
         //* Transform data into an array of objects
         const taskList = Object.keys(dataList).map((key) => ({
           id: key,
+          done: dataList[key].done,
           name: dataList[key].fullname,
         }));
         setData(taskList);
@@ -85,6 +92,14 @@ function App() {
       }
     });
   }, []);
+
+
+  const handleDone = (id, currentStatus) => {
+
+    update(ref(db, `test/${id}`), {
+      done: !currentStatus
+    });
+  };
 
   return (
     <div className="container">
@@ -101,8 +116,8 @@ function App() {
             />
             <button className="btn btn-primary">{Edit ? "Update" : "Add"}</button>
             {Edit && (
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => {
                   setEdit(false);
                   setInput("");
@@ -115,7 +130,7 @@ function App() {
           </div>
         </form>
       </div>
-      
+
       <div className="tasks-container">
         {data.length === 0 ? (
           <p className="no-tasks">No tasks yet. Add a task to get started!</p>
@@ -123,16 +138,23 @@ function App() {
           data.map((item) => (
             <div className="task-item" key={item.id}>
               <div className="task-content">
-                <p className="task-name">{item.name}</p>
+                <p className={item.done ? "task-name-done " : "task-name"}>{item.name}</p>
+
               </div>
               <div className="task-actions">
-                <button 
+                <button
+                  onClick={() => handleDone(item.id, item.done)}
+                  className="btn btn-done"
+                >
+                  {item.done ? "Undo" : "Done"}
+                </button>
+                <button
                   onClick={() => handleEdit(item.id, item.name)}
                   className="btn btn-edit"
                 >
                   Edit
                 </button>
-                <button 
+                <button
                   onClick={() => DeleteButton(item.id)}
                   className="btn btn-delete"
                 >

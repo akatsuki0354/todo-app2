@@ -5,6 +5,15 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.task-name-done {
+  text-decoration: line-through;
+}
+
+.btn-done {
+  background-color: #2ecc71;
+  color: white;
+}
+
 body {
   background-color: #f5f5f5;
   color: #333;
