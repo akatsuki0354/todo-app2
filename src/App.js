@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getDatabase, ref, onValue, push, remove, update } from "firebase/database";
+import { toast, Toaster } from "sonner";
 import "./firebaseSDK";
 import "./App.css";
 
@@ -12,20 +13,21 @@ function App() {
   const SubmitData = (e) => {
     e.preventDefault();
     if (input == "") {
-      alert("Cannot be empty")
+      toast.error("Cannot be empty");
       return;
     } else {
       if (Edit) {
         // Update existing task
         update(ref(db, `test/${EditText}`), {
+          fullname: input
         })
           .then(() => {
-            alert("Task updated successfully!");
+            toast.success("Task updated successfully!");
             setEdit(false);
             setInput("");
           })
           .catch((error) => {
-            alert("Error updating task: " + error.message);
+            toast.error("Error updating task: " + error.message);
           });
       } else {
         // Add new task
@@ -33,14 +35,13 @@ function App() {
           fullname: input,
           done: false,
         }).then(() => {
-          alert("Task added successfully!");
+          toast.success("Task added successfully!");
           setInput("");
         }).catch((error) => {
-          alert("Error adding task: " + error.message);
+          toast.error("Error adding task: " + error.message);
         });
       }
     }
-
   };
   //edit button
   const handleEdit = (taskId, taskName) => {
@@ -50,14 +51,31 @@ function App() {
   };
   //* delete data from firebase */
   const DeleteButton = (id) => {
-
-    remove(ref(db, `test/${id}`))
-      .then(() => {
-        alert("Task Deleted Successfully");
-      })
-      .catch((error) => {
-        alert(error);
-      });
+    toast(
+      "Are you sure you want to delete this task?",
+      {
+        action: {
+          label: "Delete",
+          onClick: () => {
+            toast.promise(
+              remove(ref(db, `test/${id}`)),
+              {
+                loading: "Deleting task...",
+                success: "Task deleted successfully",
+                error: (error) => `Error deleting task: ${error.message}`
+              }
+            );
+          }
+        },
+        cancel: {
+          label: "Cancel",
+          onClick: () => {
+            toast.info("Delete operation cancelled");
+          }
+        },
+        duration: 5000
+      }
+    );
   };
 
   //* fetch data from firebase */
@@ -92,6 +110,7 @@ function App() {
 
   return (
     <div className="container">
+      <Toaster position="bottom-right" richColors />
       <h1>Todo List App</h1>
       <div className="input-container">
         <form onSubmit={SubmitData}>
@@ -135,7 +154,13 @@ function App() {
                   onClick={() => handleDone(item.id, item.done)}
                   className="btn btn-done"
                 >
-                  {item.done ? "Undo" : "Done"}
+                  {item.done ?
+                    <p>  Undo</p>
+
+                    : 
+                     
+                      <p>Done</p>
+                  }
                 </button>
                 <button
                   onClick={() => handleEdit(item.id, item.name)}
