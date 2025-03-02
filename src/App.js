@@ -15,9 +15,9 @@ function App() {
       alert("Cannot be empty")
       return;
     } else {
-      if (Edit) {// Update existing task
+      if (Edit) {
+        // Update existing task
         update(ref(db, `test/${EditText}`), {
-
         })
           .then(() => {
             alert("Task updated successfully!");
@@ -31,26 +31,16 @@ function App() {
         // Add new task
         push(ref(db, "test/"), {
           fullname: input,
-        })
-          .then(() => {
-            alert("Task added successfully!");
-            setInput("");
-          })
-          .catch((error) => {
-            alert("Error adding task: " + error.message);
-          });
+          done: false,
+        }).then(() => {
+          alert("Task added successfully!");
+          setInput("");
+        }).catch((error) => {
+          alert("Error adding task: " + error.message);
+        });
       }
     }
 
-    push(ref(db, "test/"), {
-      fullname: input,
-      done: false,
-    }).then(() => {
-      alert("Task added successfully!");
-      setInput("");
-    }).catch((error) => {
-      alert("Error adding task: " + error.message);
-    });
   };
   //edit button
   const handleEdit = (taskId, taskName) => {
@@ -95,7 +85,6 @@ function App() {
 
 
   const handleDone = (id, currentStatus) => {
-
     update(ref(db, `test/${id}`), {
       done: !currentStatus
     });
